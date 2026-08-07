@@ -1219,6 +1219,130 @@
       to { width: 50%; }
     }
 
+    .hero-image-wrapper img, .menu-image-wrapper img {
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hero-image-wrapper img:hover, .menu-image-wrapper img:hover {
+      transform: rotate(360deg) scale(1.05);
+    }
+
+    @keyframes foodFall {
+      0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .falling-food {
+      position: fixed;
+      font-size: 30px;
+      z-index: 9999;
+      pointer-events: none;
+      animation: foodFall linear forwards;
+    }
+
+    /* Arma tu plato */
+    .custom-plate-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      margin-top: 40px;
+    }
+    .ingredients-panel {
+      background: var(--white);
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .ingredient-category {
+      margin-bottom: 20px;
+    }
+    .ingredient-category h4 {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ingredient-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .ingredient-item {
+      background: var(--cream-light);
+      border: 2px solid rgba(44, 166, 100, 0.1);
+      padding: 10px 16px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      cursor: grab;
+      user-select: none;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ingredient-item:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+    .ingredient-item:active {
+      cursor: grabbing;
+    }
+    .ingredient-item.dragging {
+      opacity: 0.5;
+    }
+    .plate-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .plate-dropzone {
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 4px dashed rgba(44, 166, 100, 0.3);
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+      transition: var(--transition);
+      margin-bottom: 30px;
+      position: relative;
+    }
+    .plate-dropzone.drag-over {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: scale(1.02);
+    }
+    .plate-empty-msg {
+      position: absolute;
+      text-align: center;
+      color: var(--text-muted);
+      font-weight: 500;
+      pointer-events: none;
+    }
+    .dropped-ingredient {
+      font-size: 28px;
+      animation: zoomIn 0.3s ease;
+      background: var(--cream);
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .custom-price-display {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
     /* ==========================================
        10. RESPONSIVE MEDIA QUERIES
        ========================================== */
@@ -1335,7 +1459,7 @@
         <h1 class="hero-title">Come sano. Vive simple. Entregado <span class="text-brand">en tu puerta</span>.</h1>
         <p class="hero-subtitle">Comida saludable y deliciosa sin tener que cocinar ni buscar en varios sitios. Tu plan semanal ideal con insumos locales premium y empaques eco-amigables.</p>
         <div class="hero-actions">
-          <button class="btn" onclick="scrollToElement('#menu')">Ver Menús del Día</button>
+          <button class="btn" onclick="triggerFoodRain('#menu')">Ver Menús del Día</button>
           <button class="btn btn-secondary" onclick="scrollToElement('#como-funciona')">Ver Cómo Funciona</button>
         </div>
       </div>
@@ -1414,6 +1538,59 @@
           </div>
           <h3>Sin salir de casa</h3>
           <p>Olvídate del supermercado, las recetas complicadas y la cocina sucia. Nosotros nos encargamos de todo por ti.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       ARMA TU PLATO SECTION
+       ========================================== -->
+  <section id="arma-tu-plato">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Novedad</span>
+        <h2 class="section-title">Arma tu plato personalizado</h2>
+        <p class="section-description">Arrastra tus ingredientes favoritos al plato. ¡El precio se calculará inteligentemente!</p>
+      </div>
+
+      <div class="custom-plate-grid">
+        <!-- Panel de Ingredientes -->
+        <div class="ingredients-panel">
+          <div class="ingredient-category">
+            <h4>Proteínas</h4>
+            <div class="ingredient-items">
+              <div class="ingredient-item" draggable="true" data-name="Pollo al Grill" data-price="8" data-emoji="🍗">🍗 Pollo al Grill</div>
+              <div class="ingredient-item" draggable="true" data-name="Salmón" data-price="12" data-emoji="🐟">🐟 Salmón</div>
+              <div class="ingredient-item" draggable="true" data-name="Tofu" data-price="6" data-emoji="🧊">🧊 Tofu</div>
+            </div>
+          </div>
+          <div class="ingredient-category">
+            <h4>Carbohidratos</h4>
+            <div class="ingredient-items">
+              <div class="ingredient-item" draggable="true" data-name="Arroz Integral" data-price="4" data-emoji="🍚">🍚 Arroz Integral</div>
+              <div class="ingredient-item" draggable="true" data-name="Camote" data-price="5" data-emoji="🍠">🍠 Camote</div>
+              <div class="ingredient-item" draggable="true" data-name="Quinua" data-price="5" data-emoji="🌾">🌾 Quinua</div>
+            </div>
+          </div>
+          <div class="ingredient-category">
+            <h4>Vegetales</h4>
+            <div class="ingredient-items">
+              <div class="ingredient-item" draggable="true" data-name="Brócoli" data-price="3" data-emoji="🥦">🥦 Brócoli</div>
+              <div class="ingredient-item" draggable="true" data-name="Palta" data-price="4" data-emoji="🥑">🥑 Palta</div>
+              <div class="ingredient-item" draggable="true" data-name="Tomate Cherry" data-price="3" data-emoji="🍅">🍅 Tomate Cherry</div>
+              <div class="ingredient-item" draggable="true" data-name="Zanahoria" data-price="2" data-emoji="🥕">🥕 Zanahoria</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plato -->
+        <div class="plate-area">
+          <div class="plate-dropzone" id="plate-dropzone">
+            <div class="plate-empty-msg" id="plate-empty-msg">Arrastra aquí<br>tus ingredientes</div>
+          </div>
+          <div class="custom-price-display">Total: S/. <span id="custom-total-price">15.00</span></div>
+          <button class="btn" onclick="selectCustomMenu()">Elegir este menú personalizado</button>
         </div>
       </div>
     </div>
@@ -1912,6 +2089,134 @@
       document.getElementById('error-menu').style.display = 'none';
 
       // 5. Smooth scroll down to order form
+      setTimeout(() => {
+        scrollToElement('#pedido');
+      }, 350);
+    }
+
+    // --- Falling Food Animation ---
+    function triggerFoodRain(selector) {
+      const foods = ['🥑', '🍅', '🥗', '🥦', '🥕'];
+      const numFoods = 15;
+      
+      for (let i = 0; i < numFoods; i++) {
+        setTimeout(() => {
+          const foodEl = document.createElement('div');
+          foodEl.textContent = foods[Math.floor(Math.random() * foods.length)];
+          foodEl.classList.add('falling-food');
+          foodEl.style.left = Math.random() * 100 + 'vw';
+          foodEl.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
+          document.body.appendChild(foodEl);
+          
+          // Remove after animation
+          setTimeout(() => {
+            foodEl.remove();
+          }, 3000);
+        }, i * 100);
+      }
+      
+      scrollToElement(selector);
+    }
+
+    // --- Arma tu plato Drag & Drop Logic ---
+    let customIngredients = [];
+    let customBasePrice = 15.00;
+
+    // We need to wait for DOM elements to exist, though since script is at the end it's fine.
+    const items = document.querySelectorAll('.ingredient-item');
+    const dropzone = document.getElementById('plate-dropzone');
+    const emptyMsg = document.getElementById('plate-empty-msg');
+    const customTotalPriceEl = document.getElementById('custom-total-price');
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        item.classList.add('dragging');
+        e.dataTransfer.setData('name', item.getAttribute('data-name'));
+        e.dataTransfer.setData('price', item.getAttribute('data-price'));
+        e.dataTransfer.setData('emoji', item.getAttribute('data-emoji'));
+      });
+      
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+      });
+    });
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('drag-over');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('drag-over');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('drag-over');
+      
+      const name = e.dataTransfer.getData('name');
+      const price = parseFloat(e.dataTransfer.getData('price'));
+      const emoji = e.dataTransfer.getData('emoji');
+      
+      if (!name) return;
+      
+      customIngredients.push({ name, price, emoji });
+      updateCustomPlate();
+    });
+
+    function updateCustomPlate() {
+      // Hide empty msg
+      emptyMsg.style.display = 'none';
+      
+      // Calculate total
+      let total = customBasePrice;
+      customIngredients.forEach(ing => total += ing.price);
+      customTotalPriceEl.textContent = total.toFixed(2);
+      
+      // Add visual element
+      const latestIng = customIngredients[customIngredients.length - 1];
+      const el = document.createElement('div');
+      el.className = 'dropped-ingredient';
+      el.textContent = latestIng.emoji;
+      el.title = latestIng.name;
+      dropzone.appendChild(el);
+    }
+
+    function selectCustomMenu() {
+      if (customIngredients.length === 0) {
+        alert("¡Añade al menos un ingrediente a tu plato!");
+        return;
+      }
+      
+      const ingredientsList = customIngredients.map(i => i.name).join(', ');
+      const menuName = `Personalizado: Base + ${ingredientsList}`;
+      const totalPrice = customTotalPriceEl.textContent;
+      
+      // Select visually (mocking the ID to select something in form)
+      document.getElementById('selectedMenuName').value = menuName;
+      document.getElementById('selectedMenuPrice').value = `S/. ${totalPrice}`;
+      
+      // Update form preview
+      document.getElementById('menu-preview-content-empty').style.display = 'none';
+      const activePreview = document.getElementById('menu-preview-content-active');
+      activePreview.style.display = 'flex';
+      
+      document.getElementById('preview-title').textContent = 'Plato Personalizado';
+      document.getElementById('preview-price').textContent = `S/. ${totalPrice}`;
+      
+      // Just set a placeholder icon for the preview
+      document.getElementById('menu-preview-img').innerHTML = `<div style="font-size:32px;display:flex;align-items:center;justify-content:center;height:100%;width:100%;background:var(--cream);border-radius:12px;">🥗</div>`;
+      
+      document.getElementById('menu-preview').classList.add('has-selection');
+      document.getElementById('error-menu').style.display = 'none';
+      
+      // Clear selections on regular menu
+      document.querySelectorAll('.menu-card').forEach(card => {
+        card.classList.remove('selected');
+        const btnText = card.querySelector('.menu-select-btn span');
+        if (btnText) btnText.textContent = 'Elegir este menú';
+      });
+      
       setTimeout(() => {
         scrollToElement('#pedido');
       }, 350);
