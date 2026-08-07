@@ -1344,6 +1344,119 @@
     }
 
     /* ==========================================
+       ADMIN DASHBOARD
+       ========================================== */
+    .admin-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9);
+      z-index: 100000;
+      color: white;
+      overflow-y: auto;
+      padding: 40px 20px;
+    }
+    .admin-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--white);
+      color: var(--text-main);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--cream);
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    .admin-header h2 {
+      margin: 0;
+      color: var(--primary);
+    }
+    .admin-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .admin-tab {
+      padding: 10px 20px;
+      background: var(--cream);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .admin-tab.active {
+      background: var(--primary);
+      color: white;
+    }
+    .admin-content-section {
+      display: none;
+    }
+    .admin-content-section.active {
+      display: block;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .admin-table th, .admin-table td {
+      border: 1px solid var(--cream);
+      padding: 12px;
+      text-align: left;
+    }
+    .admin-table th {
+      background: var(--cream-light);
+      font-weight: 600;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-pendiente { background: #fef08a; color: #854d0e; }
+    .status-entregado { background: #bbf7d0; color: #166534; }
+    .admin-form-group {
+      margin-bottom: 20px;
+    }
+    .admin-form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .toggle-store-btn {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .toggle-store-btn.closed {
+      background: #ef4444;
+    }
+    /* Notification banner */
+    #store-notification {
+      background: #fef3c7;
+      color: #92400e;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 9000;
+    }
+
+    /* ==========================================
        10. RESPONSIVE MEDIA QUERIES
        ========================================== */
     @media (max-width: 1024px) {
@@ -1415,6 +1528,7 @@
   </style>
 </head>
 <body>
+  <div id="store-notification"></div>
 
   <!-- ==========================================
        HEADER & NAVIGATION
@@ -1965,7 +2079,7 @@
 
       <!-- Footer Bottom -->
       <div class="footer-bottom">
-        <p>&copy; 2026 FreshBox. Todos los derechos reservados. Hecho con amor en Lima.</p>
+        <p style="user-select: none;" ondblclick="promptAdmin()">&copy; 2026 FreshBox. Todos los derechos reservados. Hecho con amor en Lima.</p>
         <div class="social-links">
           <a href="#" class="social-icon" aria-label="Facebook">
             <svg viewBox="0 0 24 24"><path d="M17,2H14A5,5 0 0,0 9,7V10H6V14H9V22H13V14H16L17,10H13V7A1,1 0 0,1 14,6H17V2Z"/></svg>
@@ -1980,6 +2094,77 @@
       </div>
     </div>
   </footer>
+
+  <!-- ==========================================
+       ADMIN DASHBOARD MODAL
+       ========================================== -->
+  <div class="admin-modal" id="admin-modal">
+    <div class="admin-container">
+      <div class="admin-header">
+        <h2>Panel de Administración (Modo Prueba)</h2>
+        <button class="btn btn-secondary" onclick="closeAdmin()">Cerrar</button>
+      </div>
+      
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('pedidos')">Pedidos</button>
+        <button class="admin-tab" onclick="switchAdminTab('tienda')">Control de Tienda</button>
+      </div>
+
+      <!-- Tab: Pedidos -->
+      <div id="admin-tab-pedidos" class="admin-content-section active">
+        <h3>Últimos Pedidos</h3>
+        <button class="btn" style="margin-bottom:15px; padding: 8px 16px;" onclick="loadOrders()">Refrescar</button>
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID / Fecha</th>
+                <th>Cliente / Celular</th>
+                <th>Menú</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-body">
+              <tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Tienda -->
+      <div id="admin-tab-tienda" class="admin-content-section">
+        <h3>Configuración de Tienda</h3>
+        
+        <div class="admin-form-group">
+          <label>Estado de la tienda</label>
+          <button id="admin-toggle-store" class="toggle-store-btn" onclick="toggleStoreState()">Abierta (Recibiendo Pedidos)</button>
+        </div>
+
+        <div class="admin-form-group">
+          <label>Notificación (Banner superior)</label>
+          <input type="text" id="admin-notif-input" class="form-control" placeholder="Ej: ¡Hoy 20% de descuento en el menú detox!">
+          <button class="btn" style="margin-top:10px; padding: 8px 16px;" onclick="saveStoreNotification()">Guardar Notificación</button>
+        </div>
+
+        <h3>Stock de Menús (Simulado)</h3>
+        <p style="color:var(--text-muted);font-size:14px;">El stock se guardará en tu navegador para pruebas.</p>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Menú</th>
+              <th>Stock Disponible</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="admin-stock-body">
+            <!-- Loaded via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
   <!-- ==========================================
        JAVASCRIPT LOGIC
@@ -2266,6 +2451,12 @@
         return;
       }
 
+      const state = getStoreState();
+      if (!state.isOpen) {
+        alert("Lo sentimos, la tienda se encuentra cerrada en este momento.");
+        return;
+      }
+
       const submitBtn = document.querySelector('.btn-submit');
       const originalBtnText = submitBtn.textContent;
       submitBtn.textContent = 'Procesando...';
@@ -2294,6 +2485,13 @@
         console.error('Error al insertar el pedido:', error);
         alert('Hubo un error al procesar tu pedido. Por favor intenta de nuevo.');
         return;
+      }
+
+      // Deduct stock if it's a predefined menu
+      const sState = getStoreState();
+      if (sState.stock[menuName] !== undefined && sState.stock[menuName] > 0) {
+        sState.stock[menuName] -= 1;
+        saveStoreState(sState);
       }
 
       // Populate Success Summary Panel
@@ -2383,6 +2581,226 @@
         
         scrollToElement('.order-container');
       }, 400);
+    }
+
+    // --- Store State Logic (Local Storage for Mocking) ---
+    function getStoreState() {
+      const stateStr = localStorage.getItem('freshbox_store_state');
+      if (stateStr) {
+        return JSON.parse(stateStr);
+      }
+      return {
+        isOpen: true,
+        notification: '',
+        stock: {
+          'Green Detox Bowl': 10,
+          'Salmon & Sweet Potato': 5,
+          'Tofu Curry Energizante': 8,
+          'Pavo Fit y Arroz de Coliflor': 12
+        }
+      };
+    }
+
+    function saveStoreState(state) {
+      localStorage.setItem('freshbox_store_state', JSON.stringify(state));
+      applyStoreState();
+    }
+
+    function applyStoreState() {
+      const state = getStoreState();
+      
+      // Handle Notification
+      const notifEl = document.getElementById('store-notification');
+      if (state.notification && state.notification.trim() !== '') {
+        notifEl.textContent = state.notification;
+        notifEl.style.display = 'block';
+      } else {
+        notifEl.style.display = 'none';
+      }
+
+      // Handle Store Open/Close
+      const navBtn = document.querySelector('.nav-btn');
+      const submitBtn = document.querySelector('.btn-submit');
+      if (!state.isOpen) {
+        if(notifEl.style.display !== 'block') {
+           notifEl.textContent = "La tienda se encuentra cerrada en este momento.";
+           notifEl.style.display = 'block';
+        }
+        if(navBtn) navBtn.textContent = 'Tienda Cerrada';
+        if(submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Tienda Cerrada';
+        }
+      } else {
+        if(navBtn) navBtn.textContent = 'Pedir Ahora';
+        if(submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirmar Pedido'; // Initial state without price
+        }
+      }
+      
+      // Handle Stock (Visual cue on cards)
+      document.querySelectorAll('.menu-card').forEach(card => {
+        const title = card.querySelector('.menu-title');
+        if(title) {
+           const menuName = title.textContent;
+           if(state.stock[menuName] !== undefined && state.stock[menuName] <= 0) {
+              card.style.opacity = '0.5';
+              card.style.pointerEvents = 'none';
+              const btn = card.querySelector('.menu-select-btn span');
+              if(btn) btn.textContent = 'Agotado';
+           } else {
+              card.style.opacity = '1';
+              card.style.pointerEvents = 'auto';
+              const btn = card.querySelector('.menu-select-btn span');
+              if(btn && !card.classList.contains('selected')) btn.textContent = 'Elegir este menú';
+           }
+        }
+      });
+    }
+
+    // Apply on load
+    applyStoreState();
+
+    // --- Admin Dashboard UI ---
+    function promptAdmin() {
+      const pwd = prompt("Ingrese la contraseña de administrador:");
+      if (pwd === "1234") {
+        document.getElementById('admin-modal').style.display = 'block';
+        loadOrders();
+        populateAdminStoreTab();
+      } else if (pwd !== null) {
+        alert("Contraseña incorrecta.");
+      }
+    }
+
+    function closeAdmin() {
+      document.getElementById('admin-modal').style.display = 'none';
+    }
+
+    function switchAdminTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-content-section').forEach(s => s.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(`admin-tab-${tab}`).classList.add('active');
+    }
+
+    async function loadOrders() {
+      const tbody = document.getElementById('admin-orders-body');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Cargando pedidos...</td></tr>';
+      
+      const { data, error } = await supabaseClient
+        .from('pedidos')
+        .select('*')
+        .order('fecha_pedido', { ascending: false })
+        .limit(20);
+        
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:red;">Error: ${error.message}</td></tr>`;
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No hay pedidos registrados.</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = '';
+      data.forEach(order => {
+        const tr = document.createElement('tr');
+        const date = new Date(order.fecha_pedido).toLocaleString('es-PE');
+        const badgeClass = order.estado === 'entregado' ? 'status-entregado' : 'status-pendiente';
+        const actionBtn = order.estado !== 'entregado' 
+          ? `<button class="btn" style="padding:4px 8px; font-size:12px;" onclick="markDelivered(${order.id})">Marcar Entregado</button>`
+          : '-';
+          
+        tr.innerHTML = `
+          <td><small>#${order.id}</small><br><small style="color:gray;">${date}</small></td>
+          <td><b>${order.nombre_cliente}</b><br>${order.celular}</td>
+          <td>${order.menu_elegido}</td>
+          <td>${order.precio_total}</td>
+          <td><span class="status-badge ${badgeClass}">${order.estado}</span></td>
+          <td>${actionBtn}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function markDelivered(id) {
+      if(!confirm("¿Marcar este pedido como entregado?")) return;
+      
+      const { error } = await supabaseClient
+        .from('pedidos')
+        .update({ estado: 'entregado' })
+        .eq('id', id);
+        
+      if (error) {
+        alert("Error al actualizar: " + error.message);
+      } else {
+        loadOrders();
+      }
+    }
+
+    // --- Admin Store Config UI ---
+    function populateAdminStoreTab() {
+      const state = getStoreState();
+      
+      // Update toggle btn
+      const toggleBtn = document.getElementById('admin-toggle-store');
+      if (state.isOpen) {
+        toggleBtn.textContent = 'Abierta (Recibiendo Pedidos)';
+        toggleBtn.className = 'toggle-store-btn';
+      } else {
+        toggleBtn.textContent = 'Cerrada (Pedidos Bloqueados)';
+        toggleBtn.className = 'toggle-store-btn closed';
+      }
+      
+      document.getElementById('admin-notif-input').value = state.notification || '';
+      
+      // Render stock
+      const stockBody = document.getElementById('admin-stock-body');
+      stockBody.innerHTML = '';
+      Object.keys(state.stock).forEach(menu => {
+        const qty = state.stock[menu];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${menu}</td>
+          <td><input type="number" id="stock-val-${menu.replace(/\s+/g, '')}" value="${qty}" style="width:60px; padding:4px;"></td>
+          <td><button class="btn" style="padding:4px 8px; font-size:12px;" onclick="updateStock('${menu}')">Actualizar</button></td>
+        `;
+        stockBody.appendChild(tr);
+      });
+    }
+
+    function toggleStoreState() {
+      const state = getStoreState();
+      state.isOpen = !state.isOpen;
+      saveStoreState(state);
+      populateAdminStoreTab();
+    }
+
+    function saveStoreNotification() {
+      const state = getStoreState();
+      state.notification = document.getElementById('admin-notif-input').value.trim();
+      saveStoreState(state);
+      alert("Notificación guardada");
+    }
+
+    function updateStock(menuName) {
+      const safeId = menuName.replace(/\s+/g, '');
+      const newVal = parseInt(document.getElementById(`stock-val-${safeId}`).value);
+      if (isNaN(newVal)) return;
+      
+      const state = getStoreState();
+      state.stock[menuName] = newVal;
+      saveStoreState(state);
+      
+      // Show mini confirmation
+      const btn = event.target;
+      const oldTxt = btn.textContent;
+      btn.textContent = '¡Listo!';
+      setTimeout(() => btn.textContent = oldTxt, 1000);
     }
   </script>
 </body>
